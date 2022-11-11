@@ -131,8 +131,8 @@ public class PlayerServiceTest {
 
         ReadyDto readyDto = playerService.ready(1L, 2L, playerReadyRequest);
 
-        assertEquals(2L, readyDto.getReadyResponseDto().getMemberId());
-        assertTrue(readyDto.getReadyResponseDto().isReadyStatus());
+        assertEquals(2L, readyDto.getMemberId());
+        assertTrue(readyDto.isReadyStatus());
     }
 
     @Test
