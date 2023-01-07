@@ -40,7 +40,7 @@ public class ExecuteDataService extends GameDataService {
 
         Weapon attackWeapon = attackData.getWeapon();
         int resultCount = defendCount + attackWeapon.getCount();
-        if (resultCount > 3 || isDefendPass) {
+        if (isDeadTurn(isDefendPass, resultCount)) {
             defender.death();
             resultCount = 3;
         }
@@ -52,6 +52,10 @@ public class ExecuteDataService extends GameDataService {
 
         GameExecuteResponse response = getGameExecuteResponse(inGame, defender, resultCount);
         messageService.sendData(gameId, "/execute", response);
+    }
+
+    private boolean isDeadTurn(boolean isDefendPass, int resultCount) {
+        return resultCount > 3 || isDefendPass;
     }
 
     private GameExecuteResponse getGameExecuteResponse(InGame inGame, InGamePlayer defender, int nextCount) {

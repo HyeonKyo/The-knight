@@ -37,18 +37,22 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         memberRepository.findByEmail(email)
                 .orElseGet(() -> {
                     log.info("  Execute join new member");
-                    Member member = memberRepository.save(Member.builder()
-                            .email(email)
-                            .nickname(nickname)
-                            .password(passwordEncoder.encode(email))
-                            .role("ROLE_USER")
-                            .image(image)
-                            .build());
-                    rankingRepository.save(Ranking.builder().member(member).build());
-                    return member;
+                    return makeNewMember(email, nickname, image);
                 });
 
         return oAuth2User;
+    }
+
+    private Member makeNewMember(String email, String nickname, String image) {
+        Member member = memberRepository.save(Member.builder()
+                .email(email)
+                .nickname(nickname)
+                .password(passwordEncoder.encode(email))
+                .role("ROLE_USER")
+                .image(image)
+                .build());
+        rankingRepository.save(Ranking.builder().member(member).build());
+        return member;
     }
 
 }

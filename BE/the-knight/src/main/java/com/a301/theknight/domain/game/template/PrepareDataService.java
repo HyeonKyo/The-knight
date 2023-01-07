@@ -101,19 +101,6 @@ public class PrepareDataService extends GameDataService {
         Player teamALeader = teamA.get(teamALeaderIndex);
         Player teamBLeader = teamB.get(teamBLeaderIndex);
 
-        //TODO : 시연을 위한 하드코딩, 추후 삭제!
-        Optional<Player> optionalLeader = players.stream()
-                .filter(player -> player.getMember().getId().equals(113L))
-                .findFirst();
-        if (optionalLeader.isPresent()) {
-            Player leader = optionalLeader.get();
-            if (Team.A.equals(leader.getTeam())) {
-                teamALeader = leader;
-            } else {
-                teamBLeader = leader;
-            }
-        }
-
         teamALeader.becomeLeader();
         teamBLeader.becomeLeader();
 
@@ -133,12 +120,6 @@ public class PrepareDataService extends GameDataService {
 
         TeamInfoData teamAInfo = makeTeamInfoData(game, getTeamLeaderId(game, Team.A));
         TeamInfoData teamBInfo = makeTeamInfoData(game, getTeamLeaderId(game, Team.B));
-        //TODO 시연을 위한 하드코딩
-        if (teamAInfo.getLeaderId() == 113L) {
-            firstAttackTeam = Team.B;
-        } else if (teamBInfo.getLeaderId() == 113L) {
-            firstAttackTeam = Team.A;
-        }
 
         redisRepository.saveInGame(game.getId(), InGame.builder()
                 .gameStatus(GameStatus.PREPARE)

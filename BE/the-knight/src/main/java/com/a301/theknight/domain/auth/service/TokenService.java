@@ -64,8 +64,8 @@ public class TokenService {
         headers.put("typ", "JWT");
         headers.put("alg", "HS256");
 
-        Claims claims = Jwts.claims();  //나중에 서버에서 파싱해서 볼 데이터 입니다.
-        claims.put("type", tokenName);  //문자도 가능하고
+        Claims claims = Jwts.claims();
+        claims.put("type", tokenName);
         claims.put("id", member.getId());
         Date now = new Date();
         long expiredDate = tokenName.equals(tokenProperties.getAccess().getName())
@@ -74,11 +74,11 @@ public class TokenService {
 
         return Jwts.builder()
                 .setHeader(headers)
-                .setClaims(claims) // 데이터를 넣어 줍니다
-                .setIssuedAt(now)   // 토큰 발행 일자
-                .setExpiration(new Date(now.getTime() + expiredDate)) // 만료 기간 입니다
-                .signWith(SignatureAlgorithm.HS256, tokenProperties.getSecret()) // 암호화 알고리즘과 암복호화에 사용할 키를 넣어줍니다
-                .compact(); // Token 생성
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + expiredDate))
+                .signWith(SignatureAlgorithm.HS256, tokenProperties.getSecret())
+                .compact();
     }
 
     public boolean validateToken(String token, String tokenType) {

@@ -22,12 +22,12 @@ import static com.a301.theknight.global.error.errorcode.GamePlayingErrorCode.*;
 @RequiredArgsConstructor
 @Service
 public class GameConvertUtil {
+    private static final int REPEAT = 3;
+
     private final GameRedisRepository gameRedisRepository;
     private final GameLockUtil gameLockUtil;
     private final Map<Long, Integer> peopleMap = new ConcurrentHashMap<>();
     private final Map<Long, ConcurrentLinkedQueue<String>> countMap = new HashMap<>();
-
-    private final int REPEAT = 3;
 
     @Transactional
     public ConvertResponse convertScreen(long gameId) {

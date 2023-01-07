@@ -35,14 +35,7 @@ public class MemberService {
 
         Long rankingNumber = rankingRepository.findMemberRanking(memberId);
 
-        return MemberInfoResponse.builder()
-                .nickname(member.getNickname())
-                .image(member.getImage())
-                .ranking(rankingNumber == null ? 0L : rankingNumber)
-                .score(ranking.getScore())
-                .win(ranking.getWin())
-                .lose(ranking.getLose())
-                .build();
+        return makeMemberInfoResponse(member, ranking, rankingNumber);
     }
 
     @Transactional
@@ -67,29 +60,47 @@ public class MemberService {
             Team myTeam = player.getTeam();
             Game game = player.getGame();
 
-            List<MemberInfoDto> alliance = game.getPlayers().stream()
-                    .filter(p -> myTeam.equals(p.getTeam()))
-                    .map(MemberInfoDto::toDto)
-                    .collect(Collectors.toList());
+            List<MemberInfoDto> alliance = findMemberInfoList(myTeam, game, true);
+            List<MemberInfoDto> opposite = findMemberInfoList(myTeam, game, false);
 
-            List<MemberInfoDto> opposite = game.getPlayers().stream()
-                    .filter(p -> !myTeam.equals(p.getTeam()))
-                    .map(MemberInfoDto::toDto)
-                    .collect(Collectors.toList());
-
-            historyDtoList.add(GameHistoryDto.builder()
-                .gameId(game.getId() == null ? 0 : game.getId())
-                .result(player.getResult().name())
-                .capacity(game.getCapacity())
-                .sword(game.getSword())
-                .twin(game.getTwin())
-                .shield(game.getShield())
-                .hand(game.getHand())
-                .alliance(alliance)
-                .opposite(opposite).build());
+            historyDtoList.add(makeGameHistoryDto(player, game, alliance, opposite));
         });
-
         return new MemberHistoryResponse(historyDtoList);
+    }
+
+    private List<MemberInfoDto> findMemberInfoList(Team myTeam, Game game, boolean allianceFlag) {
+        return game.getPlayers().stream()
+                .filter(p -> filterTeam(myTeam, allianceFlag, p))
+                .map(MemberInfoDto::toDto)
+                .collect(Collectors.toList());
+    }
+
+    private boolean filterTeam(Team myTeam, boolean allianceFlag, Player p) {
+        return myTeam.equals(p.getTeam()) == allianceFlag;
+    }
+
+    private GameHistoryDto makeGameHistoryDto(Player player, Game game, List<MemberInfoDto> alliance, List<MemberInfoDto> opposite) {
+        return GameHistoryDto.builder()
+            .gameId(game.getId() == null ? 0 : game.getId())
+            .result(player.getResult().name())
+            .capacity(game.getCapacity())
+            .sword(game.getSword())
+            .twin(game.getTwin())
+            .shield(game.getShield())
+            .hand(game.getHand())
+            .alliance(alliance)
+            .opposite(opposite).build();
+    }
+
+    private MemberInfoResponse makeMemberInfoResponse(Member member, Ranking ranking, Long rankingNumber) {
+        return MemberInfoResponse.builder()
+                .nickname(member.getNickname())
+                .image(member.getImage())
+                .ranking(rankingNumber == null ? 0L : rankingNumber)
+                .score(ranking.getScore())
+                .win(ranking.getWin())
+                .lose(ranking.getLose())
+                .build();
     }
 
     private Member getMember(long memberId) {

@@ -28,28 +28,23 @@ public class GameAttackDefenseService {
 
     @Transactional
     public MemberTeamResponse getAttacker(long gameId) {
-
-        MemberTeamResponse memberTeamResponse = null;
         InGame inGame = getInGame(gameId);
         TeamInfoData teamInfoData = inGame.updateCurrentAttackTeam() == Team.A ? inGame.getTeamAInfo() : inGame.getTeamBInfo();
         int capacity = inGame.getMaxMemberNum() / 2;
         int attackerIndex = teamInfoData.getCurrentAttackIndex();
         GameOrderDto[] orderList = teamInfoData.getOrderList();
 
+        MemberTeamResponse memberTeamResponse = null;
         while (memberTeamResponse == null) {
             attackerIndex = ++attackerIndex % capacity;
             long memberId = orderList[attackerIndex].getMemberId();
             InGamePlayer player = getInGamePlayer(gameId, memberId);
+
             if (!player.isDead()) {
-                teamInfoData.updateCurrentAttackIndex(attackerIndex);
-                memberTeamResponse = MemberTeamResponse.builder()
-                        .memberId(memberId)
-                        .team(player.getTeam().name()).build();
+                memberTeamResponse = saveAttackerData(teamInfoData, attackerIndex, memberId, player);
             }
         }
-
         gameRedisRepository.saveInGame(gameId, inGame);
-
         return memberTeamResponse;
     }
 
@@ -78,25 +73,13 @@ public class GameAttackDefenseService {
 
     @Transactional
     public AttackResponse getAttackInfo(long gameId) {
-
         InGame findInGame = getInGame(gameId);
         TurnData turn = getTurnData(findInGame);
 
         long attackerId = turn.getAttackerId();
         long defenderId = turn.getDefenderId();
 
-        return AttackResponse.builder()
-                .attacker(MemberTeamResponse.builder()
-                        .memberId(attackerId)
-                        .team(getInGamePlayer(gameId, attackerId).getTeam().name())
-                        .build())
-                .defender(MemberTeamResponse.builder()
-                        .memberId(defenderId)
-                        .team(getInGamePlayer(gameId, defenderId).getTeam().name())
-                        .build())
-                .weapon(turn.getAttackData().getWeapon().name())
-                .hand(turn.getAttackData().getAttackHand().name())
-                .build();
+        return makeAttackResponse(gameId, turn, attackerId, defenderId);
     }
 
     @Transactional
@@ -152,6 +135,30 @@ public class GameAttackDefenseService {
         defendData.defendPass();
 
         gameRedisRepository.saveInGame(gameId, findInGame);
+    }
+
+    private MemberTeamResponse saveAttackerData(TeamInfoData teamInfoData, int attackerIndex, long memberId, InGamePlayer player) {
+        MemberTeamResponse memberTeamResponse;
+        teamInfoData.updateCurrentAttackIndex(attackerIndex);
+        memberTeamResponse = MemberTeamResponse.builder()
+                .memberId(memberId)
+                .team(player.getTeam().name()).build();
+        return memberTeamResponse;
+    }
+
+    private AttackResponse makeAttackResponse(long gameId, TurnData turn, long attackerId, long defenderId) {
+        return AttackResponse.builder()
+                .attacker(MemberTeamResponse.builder()
+                        .memberId(attackerId)
+                        .team(getInGamePlayer(gameId, attackerId).getTeam().name())
+                        .build())
+                .defender(MemberTeamResponse.builder()
+                        .memberId(defenderId)
+                        .team(getInGamePlayer(gameId, defenderId).getTeam().name())
+                        .build())
+                .weapon(turn.getAttackData().getWeapon().name())
+                .hand(turn.getAttackData().getAttackHand().name())
+                .build();
     }
 
     private InGame getInGame(long gameId) {

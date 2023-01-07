@@ -37,7 +37,12 @@ public class AttackDoubtDataService extends GameDataService {
         InGamePlayer attacker = getInGamePlayer(gameId, turn.getAttackerId());
         InGamePlayer defender = getInGamePlayer(gameId, turn.getDefenderId());
 
-        AttackResponse response = AttackResponse.builder()
+        AttackResponse response = makeAttackResponse(turn, attacker, defender);
+        messageService.sendData(gameId, "/attack-info", response);
+    }
+
+    private AttackResponse makeAttackResponse(TurnData turn, InGamePlayer attacker, InGamePlayer defender) {
+        return AttackResponse.builder()
                 .attacker(MemberTeamResponse.builder()
                         .memberId(attacker.getMemberId())
                         .nickname(attacker.getNickname())
@@ -49,7 +54,6 @@ public class AttackDoubtDataService extends GameDataService {
                 .weapon(turn.getAttackData().getWeapon().name())
                 .hand(turn.getAttackData().getAttackHand().name())
                 .build();
-        messageService.sendData(gameId, "/attack-info", response);
     }
 
     private TurnData getTurnData(InGame inGame) {
