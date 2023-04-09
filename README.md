@@ -6,7 +6,7 @@
 * 게임 진행, 인증, 채팅, 랭킹 등 API 및 도메인 로직 구현
 * Redisson Lock을 활용하여 동시성 문제 해결
 * Redisson Lock, Spring AOP를 활용한 Multi Click(따닥) 문제 해결
-* Redis에 인증정보를 캐싱하여 TPPS 및 응답시간 성능 개선
+* Redis에 인증정보를 캐싱하여 TPS 및 응답시간 성능 개선
 * Junit5를 활용하여 비즈니스 로직 단위테스트 시도
 
 ### 2. 배운 점
